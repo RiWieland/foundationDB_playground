@@ -5,6 +5,7 @@ import (
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
+	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	/*
 	  "github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	  "github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
@@ -31,7 +32,7 @@ func main() {
 	}
 
 	TimAccount := accountsDir.Sub("Tim")
-	JennyAccount := accountsDir.Sub("Jenny")
+	JennyAccount = accountsDir.Sub("Jenny")
 
 	if err != nil {
 		log.Fatalf("Unable to set FDB database value (%v)", err)
@@ -39,12 +40,12 @@ func main() {
 
 	// Data Model for Key: ("AccountBalance", person, balance) = ""
 
-	_, err := db.Transact(func(tr fdb.Transaction) (ret interface{}, e error) {
-		tr.Set(fdb.Key("hello"), []byte("world"))
+}
+
+func loadAccount(t fdb.Transactor, Account directory.DirectorySubspace, person string, balance int) (err error) {
+	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
+		tr.Set(Account.Pack(tuple.Tuple{person, balance}), []byte{})
 		return
 	})
-	if err != nil {
-		log.Fatalf("Unable to set FDB database value (%v)", err)
-	}
-
+	return
 }
