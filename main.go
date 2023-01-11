@@ -41,6 +41,7 @@ func main() {
 	// Data Model for Key: ("AccountBalance", person, balance) = ""
 
 	loadAccount(fdb.Transaction{}, TimAccount, "Tim", 100)
+	loadAccount(fdb.Transaction{}, JennyAccount, "Tim", 100)
 
 }
 
