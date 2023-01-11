@@ -40,11 +40,13 @@ func main() {
 
 	// Data Model for Key: ("AccountBalance", person, balance) = ""
 
+	loadAccount(fdb.Transaction{}, TimAccount, "Tim", 100)
+
 }
 
-func loadAccount(t fdb.Transactor, Account directory.DirectorySubspace, person string, balance int) (err error) {
+func loadAccount(t fdb.Transactor, Account directory.DirectorySubspace, person string, amount int) (err error) {
 	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
-		tr.Set(Account.Pack(tuple.Tuple{person, balance}), []byte{})
+		tr.Set(Account.Pack(tuple.Tuple{person, amount}), []byte{})
 		return
 	})
 	return
