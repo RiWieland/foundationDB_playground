@@ -2,10 +2,9 @@ package main
 
 import (
 	"log"
-
-	"errors"
-	"fmt"
 	"strconv"
+
+	"fmt"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
@@ -60,16 +59,18 @@ func loadAccount(t fdb.Transactor, person string, amount int) (err error) {
 	fmt.Println(SCKey)
 
 	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
-		if tr.Get(SCKey).MustGet() != nil {
-			return // already signed up
-		}
-
-		classes := tr.GetRange(TimAccount.Sub(person), fdb.RangeOptions{Mode: fdb.StreamingModeWantAll}).GetSliceOrPanic()
-		if len(classes) == 5 {
-			err = errors.New("too many classes")
-			return
-		}
-
+		/*
+			if tr.Get(SCKey).MustGet() != nil {
+				return // already signed up
+			}
+		*/
+		/*
+			classes := tr.GetRange(TimAccount.Sub(person), fdb.RangeOptions{Mode: fdb.StreamingModeWantAll}).GetSliceOrPanic()
+			if len(classes) == 5 {
+				err = errors.New("too many classes")
+				return
+			}
+		*/
 		tr.Set(SCKey, []byte(strconv.FormatInt(100, 10)))
 
 		return
