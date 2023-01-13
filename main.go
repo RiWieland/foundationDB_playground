@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -25,7 +26,8 @@ var initialBalanceTim = 100
 var initialBalanceJenny = 300
 
 var TimAccount subspace.Subspace
-var JennyAccount subspace.Subspace
+
+//var JennyAccount subspace.Subspace
 
 func main() {
 	fdb.MustAPIVersion(620)
@@ -54,20 +56,12 @@ func main() {
 
 func loadAccount(t fdb.Transactor, person string, amount int) (err error) {
 	SCKey := TimAccount.Pack(tuple.Tuple{person, amount})
-	classKey := JennyAccount.Pack(tuple.Tuple{person, amount})
+	//	classKey := JennyAccount.Pack(tuple.Tuple{person, amount})
+	fmt.Println(SCKey)
 
 	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
 		if tr.Get(SCKey).MustGet() != nil {
 			return // already signed up
-		}
-
-		seats, err := strconv.ParseInt(string(tr.Get(classKey).MustGet()), 10, 64)
-		if err != nil {
-			return
-		}
-		if seats == 0 {
-			err = errors.New("no remaining seats")
-			return
 		}
 
 		classes := tr.GetRange(TimAccount.Sub(person), fdb.RangeOptions{Mode: fdb.StreamingModeWantAll}).GetSliceOrPanic()
@@ -76,10 +70,23 @@ func loadAccount(t fdb.Transactor, person string, amount int) (err error) {
 			return
 		}
 
-		tr.Set(classKey, []byte(strconv.FormatInt(seats-1, 10)))
-		tr.Set(SCKey, []byte{})
+		tr.Set(SCKey, []byte(strconv.FormatInt(100, 10)))
 
 		return
 	})
+
+	ret, err := t.Transact(func(tr fdb.Transaction) (ret interface{}, e error) {
+		ret = tr.Get(fdb.Key(SCKey)).MustGet()
+		return
+	})
+	if err != nil {
+		log.Fatalf("Unable to read FDB database value (%v)", err)
+	}
+
+	v := ret.([]byte)
+	fmt.Printf("hello, %s\n", string(v))
+	fmt.Printf("hello, %s\n", string(v))
+
 	return
+
 }
