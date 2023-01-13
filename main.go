@@ -3,8 +3,12 @@ package main
 import (
 	"log"
 
+	"errors"
+	"strconv"
+
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
+	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	/*
 	  "github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
@@ -20,6 +24,9 @@ import (
 var initialBalanceTim = 100
 var initialBalanceJenny = 300
 
+var TimAccount subspace.Subspace
+var JennyAccount subspace.Subspace
+
 func main() {
 	fdb.MustAPIVersion(620)
 	db := fdb.MustOpenDefault()
@@ -31,8 +38,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	TimAccount := accountsDir.Sub("Tim")
-	JennyAccount = accountsDir.Sub("Jenny")
+	TimAccount = accountsDir.Sub("class")
+	//JennyAccount = accountsDir.Sub("attends")
 
 	if err != nil {
 		log.Fatalf("Unable to set FDB database value (%v)", err)
@@ -40,14 +47,38 @@ func main() {
 
 	// Data Model for Key: ("AccountBalance", person, balance) = ""
 
-	loadAccount(fdb.Transaction{}, TimAccount, "Tim", 100)
-	loadAccount(fdb.Transaction{}, JennyAccount, "Tim", 100)
+	loadAccount(db, "Tim", 100)
+	//loadAccount(db, "Jenny", 100)
 
 }
 
-func loadAccount(t fdb.Transactor, Account directory.DirectorySubspace, person string, amount int) (err error) {
+func loadAccount(t fdb.Transactor, person string, amount int) (err error) {
+	SCKey := TimAccount.Pack(tuple.Tuple{person, amount})
+	classKey := JennyAccount.Pack(tuple.Tuple{person, amount})
+
 	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
-		tr.Set(Account.Pack(tuple.Tuple{person, amount}), []byte{})
+		if tr.Get(SCKey).MustGet() != nil {
+			return // already signed up
+		}
+
+		seats, err := strconv.ParseInt(string(tr.Get(classKey).MustGet()), 10, 64)
+		if err != nil {
+			return
+		}
+		if seats == 0 {
+			err = errors.New("no remaining seats")
+			return
+		}
+
+		classes := tr.GetRange(TimAccount.Sub(person), fdb.RangeOptions{Mode: fdb.StreamingModeWantAll}).GetSliceOrPanic()
+		if len(classes) == 5 {
+			err = errors.New("too many classes")
+			return
+		}
+
+		tr.Set(classKey, []byte(strconv.FormatInt(seats-1, 10)))
+		tr.Set(SCKey, []byte{})
+
 		return
 	})
 	return
