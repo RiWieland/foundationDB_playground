@@ -25,8 +25,7 @@ var initialBalanceTim = 100
 var initialBalanceJenny = 300
 
 var TimAccount subspace.Subspace
-
-//var JennyAccount subspace.Subspace
+var JennyAccount subspace.Subspace
 
 func main() {
 	fdb.MustAPIVersion(620)
@@ -40,7 +39,7 @@ func main() {
 	}
 
 	TimAccount = accountsDir.Sub("class")
-	//JennyAccount = accountsDir.Sub("attends")
+	JennyAccount = accountsDir.Sub("attends")
 
 	if err != nil {
 		log.Fatalf("Unable to set FDB database value (%v)", err)
@@ -50,6 +49,7 @@ func main() {
 
 	loadAccount(db, "Tim", 100)
 	//loadAccount(db, "Jenny", 100)
+	fetchAccount(db, "Tim", 100)
 
 }
 
@@ -75,9 +75,14 @@ func loadAccount(t fdb.Transactor, person string, amount int) (err error) {
 
 		return
 	})
+	return
+}
+
+func fetchAccount(t fdb.Transactor, person string, amount int) (err error) {
+	key := TimAccount.Pack(tuple.Tuple{person, amount})
 
 	ret, err := t.Transact(func(tr fdb.Transaction) (ret interface{}, e error) {
-		ret = tr.Get(fdb.Key(SCKey)).MustGet()
+		ret = tr.Get(fdb.Key(key)).MustGet()
 		return
 	})
 	if err != nil {
