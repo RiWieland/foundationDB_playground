@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"strconv"
 
 	"fmt"
 
@@ -47,31 +46,22 @@ func main() {
 
 	// Data Model for Key: ("AccountBalance", person, balance) = ""
 
-	loadAccount(db, "Tim", 100)
-	//loadAccount(db, "Jenny", 100)
-	fetchAccount(db, "Tim", 100)
+	loadAccount(db, "Tim", 200)
+	fetchAccount(db, "Tim", 200)
 
+	//fetchAccount(db, "Jenny", 200)
+	test, _ := listAllAccounts(db)
+	fmt.Println(test)
 }
 
 func loadAccount(t fdb.Transactor, person string, amount int) (err error) {
 	SCKey := TimAccount.Pack(tuple.Tuple{person, amount})
-	//	classKey := JennyAccount.Pack(tuple.Tuple{person, amount})
 	fmt.Println(SCKey)
+	// print encoding keys, more info.: https://forums.foundationdb.org/t/application-design-using-subspace-and-tuple/452
 
 	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
-		/*
-			if tr.Get(SCKey).MustGet() != nil {
-				return // already signed up
-			}
-		*/
-		/*
-			classes := tr.GetRange(TimAccount.Sub(person), fdb.RangeOptions{Mode: fdb.StreamingModeWantAll}).GetSliceOrPanic()
-			if len(classes) == 5 {
-				err = errors.New("too many classes")
-				return
-			}
-		*/
-		tr.Set(SCKey, []byte(strconv.FormatInt(100, 10)))
+
+		tr.Set(SCKey, []byte{}) // we set an encoded key out of the Tuple of person and amount
 
 		return
 	})
@@ -80,6 +70,7 @@ func loadAccount(t fdb.Transactor, person string, amount int) (err error) {
 
 func fetchAccount(t fdb.Transactor, person string, amount int) (err error) {
 	key := TimAccount.Pack(tuple.Tuple{person, amount})
+	fmt.Println(key)
 
 	ret, err := t.Transact(func(tr fdb.Transaction) (ret interface{}, e error) {
 		ret = tr.Get(fdb.Key(key)).MustGet()
@@ -90,9 +81,28 @@ func fetchAccount(t fdb.Transactor, person string, amount int) (err error) {
 	}
 
 	v := ret.([]byte)
-	fmt.Printf("hello, %s\n", string(v))
-	fmt.Printf("hello, %s\n", string(v))
+	fmt.Printf("Amount: %s\n", string(v))
 
 	return
 
+}
+
+func listAllAccounts(t fdb.Transactor) (ac []string, err error) {
+	r, err := t.ReadTransact(func(rtr fdb.ReadTransaction) (interface{}, error) {
+		var classes []string
+		ri := rtr.GetRange(TimAccount, fdb.RangeOptions{}).Iterator()
+		for ri.Advance() {
+			kv := ri.MustGet()
+			t, err := TimAccount.Unpack(kv.Key)
+			if err != nil {
+				return nil, err
+			}
+			classes = append(classes, t[0].(string))
+		}
+		return classes, nil
+	})
+	if err == nil {
+		ac = r.([]string)
+	}
+	return
 }
