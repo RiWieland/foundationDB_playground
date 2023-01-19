@@ -106,3 +106,13 @@ func listAllAccounts(t fdb.Transactor) (ac []string, err error) {
 	}
 	return
 }
+
+func dropAccount(t fdb.Transactor, person, amount int) (err error) {
+	SCKey := TimAccount.Pack(tuple.Tuple{person, amount})
+
+	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
+		tr.Clear(SCKey)
+		return
+	})
+	return
+}
