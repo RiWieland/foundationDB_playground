@@ -20,11 +20,19 @@ import (
 	  "math/rand"
 	*/)
 
+// To do:
+// - transfer data between routines -> channnel /chan
+
 var initialBalanceTim = 100
 var initialBalanceJenny = 300
 
 var TimAccount subspace.Subspace
 var JennyAccount subspace.Subspace
+
+type keys struct {
+	name   string
+	amount int
+}
 
 func main() {
 	fdb.MustAPIVersion(620)
@@ -89,7 +97,7 @@ func fetchAccount(t fdb.Transactor, person string, amount int) (err error) {
 
 func listAllAccounts(t fdb.Transactor) (ac []string, err error) {
 	r, err := t.ReadTransact(func(rtr fdb.ReadTransaction) (interface{}, error) {
-		var classes []string
+		var accounts []string
 		ri := rtr.GetRange(TimAccount, fdb.RangeOptions{}).Iterator()
 		for ri.Advance() {
 			kv := ri.MustGet()
@@ -97,9 +105,10 @@ func listAllAccounts(t fdb.Transactor) (ac []string, err error) {
 			if err != nil {
 				return nil, err
 			}
-			classes = append(classes, t[0].(string))
+
+			accounts = append(accounts, t[0].(string))
 		}
-		return classes, nil
+		return accounts, nil
 	})
 	if err == nil {
 		ac = r.([]string)
