@@ -29,9 +29,14 @@ var initialBalanceJenny = 300
 var TimAccount subspace.Subspace
 var JennyAccount subspace.Subspace
 
-type keys struct {
+type personalAccount struct {
 	name   string
-	amount int
+	amount int64
+}
+
+type accountList struct {
+	bank    string
+	members []personalAccount
 }
 
 func main() {
@@ -95,9 +100,10 @@ func fetchAccount(t fdb.Transactor, person string, amount int) (err error) {
 
 }
 
-func listAllAccounts(t fdb.Transactor) (ac []string, err error) {
+func listAllAccounts(t fdb.Transactor) (ac personalAccount, err error) {
+	var personAccount personalAccount
+	var allAccounts []personalAccount
 	r, err := t.ReadTransact(func(rtr fdb.ReadTransaction) (interface{}, error) {
-		var accounts []string
 		ri := rtr.GetRange(TimAccount, fdb.RangeOptions{}).Iterator()
 		for ri.Advance() {
 			kv := ri.MustGet()
@@ -105,13 +111,18 @@ func listAllAccounts(t fdb.Transactor) (ac []string, err error) {
 			if err != nil {
 				return nil, err
 			}
+			personAccount := personalAccount{t[0].(string), t[1].(int64)}
+			allAccounts = append(allAccounts, personAccount)
 
-			accounts = append(accounts, t[0].(string))
 		}
-		return accounts, nil
+		account := accountList{"bankABC", allAccounts}
+		fmt.Println(account)
+
+		return personAccount, nil
 	})
 	if err == nil {
-		ac = r.([]string)
+		fmt.Println("called in error: ", r)
+		//ac = r.([]string)
 	}
 	return
 }
