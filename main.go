@@ -22,6 +22,10 @@ import (
 
 // To do:
 // - transfer data between routines -> channnel /chan
+// - make sure every person only got one account
+// - implement restrictions:
+// -  - no negative vales
+// - overwriting keys in key-value store OR timestamp?
 
 var initialBalanceTim = 100
 var initialBalanceJenny = 300
@@ -59,12 +63,12 @@ func main() {
 
 	// Data Model for Key: ("AccountBalance", person, balance) = ""
 
-	loadAccount(db, "Tim", 200)
+	loadAccount(db, "Tim", 300)
 	fetchAccount(db, "Tim", 200)
 
 	//fetchAccount(db, "Jenny", 200)
 	test, _ := listAllAccounts(db)
-	fmt.Println(test)
+	fmt.Println("this is test", test)
 }
 
 func loadAccount(t fdb.Transactor, person string, amount int) (err error) {
@@ -81,6 +85,18 @@ func loadAccount(t fdb.Transactor, person string, amount int) (err error) {
 	return
 }
 
+func transferMoney(t fdb.Transactor, source string, target, amount int) (err error) {
+
+	//sourceKey := TimAccount.Pack(tuple.Tuple{source, amount})
+	//targetKey := JennyAccount.Pack(tuple.Tuple{target, amount})
+
+	//read latest values for accounts
+	allAccount, _ = listAllAccounts(t) // returning interface of type Accountlist
+	// implement method for accessing single accounts and values
+
+	return
+}
+
 func fetchAccount(t fdb.Transactor, person string, amount int) (err error) {
 	key := TimAccount.Pack(tuple.Tuple{person, amount})
 	fmt.Println(key)
@@ -94,14 +110,14 @@ func fetchAccount(t fdb.Transactor, person string, amount int) (err error) {
 	}
 
 	v := ret.([]byte)
-	fmt.Printf("Amount: %s\n", string(v))
+	fmt.Printf("func fetchAccount called: %s\n", string(v))
 
 	return
 
 }
 
-func listAllAccounts(t fdb.Transactor) (ac personalAccount, err error) {
-	var personAccount personalAccount
+func listAllAccounts(t fdb.Transactor) (ac interface{}, err error) {
+	//var personAccount personalAccount
 	var allAccounts []personalAccount
 	r, err := t.ReadTransact(func(rtr fdb.ReadTransaction) (interface{}, error) {
 		ri := rtr.GetRange(TimAccount, fdb.RangeOptions{}).Iterator()
@@ -118,13 +134,13 @@ func listAllAccounts(t fdb.Transactor) (ac personalAccount, err error) {
 		account := accountList{"bankABC", allAccounts}
 		fmt.Println(account)
 
-		return personAccount, nil
+		return account, nil
 	})
-	if err == nil {
+	if err != nil {
 		fmt.Println("called in error: ", r)
 		//ac = r.([]string)
 	}
-	return
+	return r, err
 }
 
 func dropAccount(t fdb.Transactor, person, amount int) (err error) {
