@@ -1,9 +1,10 @@
 package main
 
 import (
+	"encoding/binary"
 	"log"
 
-	"errors"
+	"bytes"
 	"fmt"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -66,31 +67,40 @@ func main() {
 
 	loadAccount(db, "Tim", 300)
 	fetchAccount(db, "Tim", 200)
-	transferMoney(db, "Tim", 200, 200)
+	// transferMoney(db, "Tim", 200, 200)
 	//fetchAccount(db, "Jenny", 200)
 	test, _ := listAllAccounts(db)
 	fmt.Println("this is test", test)
 }
 
-func loadAccount(t fdb.Transactor, person string, amount int) (err error) {
+func loadAccount(t fdb.Transactor, person string, amount int16) (err error) {
 	SCKey := TimAccount.Pack(tuple.Tuple{person, amount})
 	fmt.Println(SCKey)
 	// print encoding keys, more info.: https://forums.foundationdb.org/t/application-design-using-subspace-and-tuple/452
 
+	// converting int (amount) to bytes to use it in "Set" method
+	buf := new(bytes.Buffer)
+	error_ := binary.Write(buf, binary.LittleEndian, amount)
+	if error_ != nil {
+		fmt.Println("binary.Write failed:", error_)
+	}
+	fmt.Printf("% x", buf.Bytes())
+
 	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
 
-		tr.Set(SCKey, []byte{}) // we set an encoded key out of the Tuple of person and amount
+		tr.Set(SCKey, buf.Bytes()) // we set an encoded key out of the Tuple of person and amount
 
 		return
 	})
 	return
 }
 
+/*
+
 func transferMoney(t fdb.Transactor, source string, target, amount int) (err error) {
 
 	sourceKey := TimAccount.Pack(tuple.Tuple{source, amount})
 	targetKey := JennyAccount.Pack(tuple.Tuple{target, amount})
-
 	ret, err := t.Transact(func(tr fdb.Transaction) (ret interface{}, e error) {
 		source := tr.Get(fdb.Key(sourceKey)).MustGet()
 		target := tr.Get(fdb.Key(targetKey)).MustGet()
@@ -115,6 +125,7 @@ func transferMoney(t fdb.Transactor, source string, target, amount int) (err err
 
 	return
 }
+*/
 
 func fetchAccount(t fdb.Transactor, person string, amount int) (err error) {
 	key := TimAccount.Pack(tuple.Tuple{person, amount})
