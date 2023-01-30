@@ -73,14 +73,14 @@ func main() {
 	fmt.Println("this is test", test)
 }
 
-func loadAccount(t fdb.Transactor, person string, amount int16) (err error) {
+func loadAccount(t fdb.Transactor, person string, amount int) (err error) {
 	SCKey := TimAccount.Pack(tuple.Tuple{person, amount})
 	fmt.Println(SCKey)
 	// print encoding keys, more info.: https://forums.foundationdb.org/t/application-design-using-subspace-and-tuple/452
 
 	// converting int (amount) to bytes to use it in "Set" method
 	buf := new(bytes.Buffer)
-	error_ := binary.Write(buf, binary.LittleEndian, amount)
+	error_ := binary.Write(buf, binary.LittleEndian, int32(amount))
 	if error_ != nil {
 		fmt.Println("binary.Write failed:", error_)
 	}
