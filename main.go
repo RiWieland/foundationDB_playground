@@ -1,11 +1,10 @@
 package main
 
 import (
-	"encoding/binary"
-	"log"
-
 	"bytes"
+	"encoding/binary"
 	"fmt"
+	"log"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
@@ -65,8 +64,8 @@ func main() {
 
 	// Data Model for Key: ("AccountBalance", person, balance) = ""
 
-	loadAccount(db, "Tim", 300)
-	fetchAccount(db, "Tim", 200)
+	loadAccount(db, "Tim", 400)
+	fetchAccount(db, "Tim", 400)
 	// transferMoney(db, "Tim", 200, 200)
 	//fetchAccount(db, "Jenny", 200)
 	test, _ := listAllAccounts(db)
@@ -138,9 +137,13 @@ func fetchAccount(t fdb.Transactor, person string, amount int) (err error) {
 	if err != nil {
 		log.Fatalf("Unable to read FDB database value (%v)", err)
 	}
+	fmt.Println(ret)
 
 	v := ret.([]byte)
 	fmt.Printf("func fetchAccount called: %s\n", string(v))
+	fmt.Println("this is v: ", v)
+	data := binary.LittleEndian.Uint32(v)
+	fmt.Println(data)
 
 	return
 
