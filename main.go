@@ -94,37 +94,14 @@ func loadAccount(t fdb.Transactor, person string, amount int) (err error) {
 	return
 }
 
-/*
-
 func transferMoney(t fdb.Transactor, source string, target, amount int) (err error) {
 
-	sourceKey := TimAccount.Pack(tuple.Tuple{source, amount})
-	targetKey := JennyAccount.Pack(tuple.Tuple{target, amount})
-	ret, err := t.Transact(func(tr fdb.Transaction) (ret interface{}, e error) {
-		source := tr.Get(fdb.Key(sourceKey)).MustGet()
-		target := tr.Get(fdb.Key(targetKey)).MustGet()
-		if source == nil || target == nil {
-			err = errors.New("target or source account does not exist")
-			return
-		}
-		if source[1].(int64) < amount {
-			err = errors.New("Amount not covered by Account")
-			return
+	// money transfer consist out of the following methods:
+	// - Transact: withdraw money
+	// - Transaction: load money on other account
+	// - if error -> recover to previous state
 
-		}
-
-		return
-
-	})
-
-	//method below puts in explicit logic
-	//read latest values for accounts
-	//allAccount, _ = listAllAccounts(t) // returning interface of type Accountlist
-	// implement method for accessing single accounts and values
-
-	return
 }
-*/
 
 func fetchAccount(t fdb.Transactor, person string, amount int) (err error) {
 	key := TimAccount.Pack(tuple.Tuple{person, amount})
@@ -142,7 +119,7 @@ func fetchAccount(t fdb.Transactor, person string, amount int) (err error) {
 	v := ret.([]byte)
 	fmt.Printf("func fetchAccount called: %s\n", string(v))
 	fmt.Println("this is v: ", v)
-	data := binary.LittleEndian.Uint32(v)
+	data := binary.LittleEndian.Uint32(v) // decoding the byte with the help of binary package
 	fmt.Println(data)
 
 	return
