@@ -11,7 +11,7 @@ type kvStore struct {
 	instance fdb.Database
 }
 
-func (db kvStore) initFDB() kvStore {
+func (db kvStore) initFdb() kvStore {
 	fdb.MustAPIVersion(620)
 	db.instance = fdb.MustOpenDefault()
 	db.instance.Options().SetTransactionTimeout(60000) // 60,000 ms = 1 minute
