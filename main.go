@@ -38,6 +38,24 @@ func main() {
 type file struct {
 	startTime time.Time
 	endTime   time.Time
+	path      string
 	object    string
-	format    string
+	fileType  string
+}
+
+// coordinates where object is detected
+type ObjectCoord struct {
+}
+
+// duration when the object is visible
+type objectDuration struct {
+	start time.Time
+	end   time.Time
+}
+
+// draft for keyValue
+type keyValue struct {
+	f file
+	t ObjectCoord
+	d objectDuration
 }
