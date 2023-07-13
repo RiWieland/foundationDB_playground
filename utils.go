@@ -8,7 +8,8 @@ import (
 
 func (f file) extractFileMeta(path string) file {
 	fn := filepath.Base(path)
-	f.object = filepath.Ext(fn)
+	f.fileType = filepath.Ext(fn)
+	f.path = fn
 	//f.startTime = fn[:14]
 	//f.endTime = fn[:14]
 	startTimeString := fn[:24]
