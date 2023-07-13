@@ -7,8 +7,10 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
 )
 
+// create subspace/directory as separate structs
 type kvStore struct {
-	instance fdb.Database
+	instance  fdb.Database
+	subspaces []directory.DirectorySubspace
 }
 
 func (db kvStore) initFdb() kvStore {
@@ -19,11 +21,16 @@ func (db kvStore) initFdb() kvStore {
 	return db
 }
 
-func (db kvStore) initDirectory(name string) directory.DirectorySubspace {
-	directory, err := directory.CreateOrOpen(db.instance, []string{name}, nil)
+// initialize directory for kvStore
+func (db kvStore) addDirectorySub(name string) {
+	directorySub, err := directory.CreateOrOpen(db.instance, []string{name}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return directory
 
+	var subspaces []directory.DirectorySubspace
+	if len(db.subspaces) != 0 {
+		subspaces = append(subspaces, db.subspaces...)
+		db.subspaces = append(subspaces, directorySub)
+	}
 }
