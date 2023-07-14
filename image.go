@@ -4,6 +4,8 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"image/jpeg"
+	"io"
 	"log"
 	"os"
 )
@@ -45,4 +47,16 @@ func addRectangle(img customImage, rect image.Rectangle) draw.Image {
 		img.Set(max.X, i, myColor)
 	}
 	return img
+}
+
+func drawableRGBImage(f io.Reader) (draw.Image, error) {
+	img, err := jpeg.Decode(f)
+	if err != nil {
+		return nil, err
+	}
+	b := img.Bounds()
+	output_rgb := image.NewRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
+	draw.Draw(output_rgb, output_rgb.Bounds(), img, b.Min, draw.Src)
+
+	return output_rgb, nil
 }
