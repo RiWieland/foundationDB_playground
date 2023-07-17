@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-type customImage struct {
+type editableImage struct {
 	draw.Image
 }
 
@@ -18,7 +18,7 @@ type Img struct {
 	size []image.Point
 }
 
-func readImg(path string) customImage {
+func readImg(path string) editableImage {
 	f, err := os.Open(path)
 	if err != nil {
 		panic(err)
@@ -26,7 +26,7 @@ func readImg(path string) customImage {
 	defer f.Close()
 
 	img_, _ := drawableRGBImage(f)
-	custImg := customImage{
+	custImg := editableImage{
 		img_,
 	}
 	if err != nil {
@@ -35,7 +35,7 @@ func readImg(path string) customImage {
 	return custImg
 }
 
-func addRectangle(img customImage, rect image.Rectangle) draw.Image {
+func addRectangle(img editableImage, rect image.Rectangle) draw.Image {
 	myColor := color.RGBA{255, 0, 255, 255}
 
 	min := rect.Min
