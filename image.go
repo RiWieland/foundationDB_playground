@@ -14,6 +14,10 @@ type customImage struct {
 	draw.Image
 }
 
+type Img struct {
+	size []image.Point
+}
+
 func readImg(path string) customImage {
 	f, err := os.Open(path)
 	if err != nil {
