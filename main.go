@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"image"
 	"time"
 	/*
 	  "github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
@@ -33,6 +34,23 @@ func main() {
 	var f file
 	fi := f.extractFileMeta(file_path)
 	fmt.Println(fi)
+
+	// TEST Func for Rectangle
+	EditImg := readImg("")
+
+	var origImg Img
+
+	origImg.size = []image.Point{
+		image.Point{10, 190},   // top-left
+		image.Point{10, 240},   // bottom-left
+		image.Point{1000, 200}, // bottom-right
+		image.Point{1000, 150}, // top-right
+	}
+
+	out := CreateOutputFile("test.")
+
+	img_marked := addPointVector(EditImg, origImg.size)
+
 }
 
 type file struct {
