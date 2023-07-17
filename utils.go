@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 )
@@ -27,4 +28,14 @@ func (f file) extractFileMeta(path string) file {
 	f.startTime = startTime
 	f.endTime = endTime
 	return f
+}
+
+func CreateOutputFile(path string) *os.File {
+	// Add Point Slice
+	out, err := os.Create(path)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return out
 }
