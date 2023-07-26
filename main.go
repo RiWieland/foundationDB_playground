@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"image"
 	"time"
 	/*
 	  "github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
@@ -32,25 +31,20 @@ func main() {
 	//db.initDirectory("rawFiles")
 	file_path := "2023-10-12T16:02:32.342Z_18:34:02.123Z_cam1.mp4"
 	var f file
-	fi := f.extractFileMeta(file_path)
-	fmt.Println(fi)
+	fMeta := f.extractFileMeta(file_path)
+	fmt.Println(fMeta)
 
 	// TEST Func for Rectangle
 	EditImg := readImg("test.jpg")
 
-	var origImg Img
-
-	origImg.size = []image.Point{
-		image.Point{10, 190},   // top-left
-		image.Point{10, 240},   // bottom-left
-		image.Point{1000, 200}, // bottom-right
-		image.Point{1000, 150}, // top-right
+	coor := objectCoord{
+		0,
+		260,
+		1100,
+		120,
 	}
 
-	//out := CreateOutputFile("test.jpg")
-
-	myRectangle := image.Rect(0, 260, 1100, 120)
-	img_marked := addRectangle(EditImg, myRectangle)
+	img_marked := addRectangle(EditImg, coor)
 	writeImg("out_rect.jpg", img_marked)
 
 }
@@ -65,7 +59,11 @@ type file struct {
 }
 
 // coordinates where object is detected
-type ObjectCoord struct {
+type objectCoord struct {
+	x0 int
+	y0 int
+	x1 int
+	y1 int
 }
 
 // duration when the object is visible
@@ -77,6 +75,6 @@ type objectDuration struct {
 // draft for keyValue
 type keyValue struct {
 	f file
-	t ObjectCoord
+	t objectCoord
 	d objectDuration
 }

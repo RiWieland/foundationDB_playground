@@ -51,11 +51,14 @@ func writeImg(path string, img draw.Image) {
 
 }
 
-func addRectangle(img editableImage, rect image.Rectangle) draw.Image {
+func addRectangle(img editableImage, coor objectCoord) draw.Image {
+
+	myRectangle := image.Rect(coor.x0, coor.y0, coor.x1, coor.y1)
+
 	myColor := color.RGBA{255, 0, 255, 255}
 
-	min := rect.Min
-	max := rect.Max
+	min := myRectangle.Min
+	max := myRectangle.Max
 
 	for i := min.X; i < max.X; i++ {
 		img.Set(i, min.Y, myColor)
