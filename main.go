@@ -36,7 +36,7 @@ func main() {
 	fmt.Println(fi)
 
 	// TEST Func for Rectangle
-	EditImg := readImg("")
+	EditImg := readImg("test.jpg")
 
 	var origImg Img
 
@@ -47,12 +47,15 @@ func main() {
 		image.Point{1000, 150}, // top-right
 	}
 
-	out := CreateOutputFile("test.")
+	//out := CreateOutputFile("test.jpg")
 
-	img_marked := addPointVector(EditImg, origImg.size)
+	myRectangle := image.Rect(0, 260, 1100, 120)
+	img_marked := addRectangle(EditImg, myRectangle)
+	writeImg("out_rect.jpg", img_marked)
 
 }
 
+// write for tag in video
 type file struct {
 	startTime time.Time
 	endTime   time.Time
