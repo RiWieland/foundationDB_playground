@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
@@ -33,6 +34,21 @@ func readImg(path string) editableImage {
 		log.Fatal(err)
 	}
 	return custImg
+}
+
+func writeImg(path string, img draw.Image) {
+	out, err := os.Create(path)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	e := jpeg.Encode(out, img, nil)
+	if e != nil {
+		fmt.Println(e)
+		os.Exit(1)
+	}
+
 }
 
 func addRectangle(img editableImage, rect image.Rectangle) draw.Image {
