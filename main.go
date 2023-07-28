@@ -5,7 +5,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
+	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
+	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	/*
 	  "github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	  "github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
@@ -23,6 +26,10 @@ import (
 // - implement restrictions:
 // -  - no negative vales
 // - overwriting keys in key-value store OR timestamp?
+
+var rawSub subspace.Subspace
+
+//var processedSub subspace.Subspace
 
 func main() {
 
@@ -47,9 +54,6 @@ func main() {
 	writeImg("out_rect.jpg", img_marked)
 	*/
 	db := initFdb()
-	//db.instance = initFdb()
-	//db.instance.Options().SetTransactionTimeout(60000) // 60,000 ms = 1 minute
-	//db.instance.Options().SetTransactionRetryLimit(100)
 
 	// add meta to file subDirectory:
 	fileDir, err := directory.CreateOrOpen(db, []string{"fileDir"}, nil)
@@ -57,12 +61,32 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(fileDir)
-	//rawSub := fileDir.Sub("rawVideo")
-	//proSub := fileDir.Sub("processedVideo")
-	//db.addDirectorySub("rawVideo")
-	//fmt.Println(rawSub)
+	rawSub := fileDir.Sub("rawVideo")
+	//processedSub := fileDir.Sub("processedVideo")
 
+	// clear:
+	_, err = db.Transact(func(tr fdb.Transaction) (interface{}, error) {
+		tr.ClearRange(fileDir)
+		return nil, nil
+	})
+
+	// enter values:
+	SCKey := rawSub.Pack(tuple.Tuple{f.path, f.startTime, f.endTime})
+	_, err = db.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
+		tr.Set(SCKey, []byte{})
+		return
+	})
+
+}
+
+func signup(t fdb.Transactor, studentID, class string) (err error) {
+	SCKey := rawSub.Pack(tuple.Tuple{studentID, class})
+
+	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
+		tr.Set(SCKey, []byte{})
+		return
+	})
+	return
 }
 
 // write for tag in video
