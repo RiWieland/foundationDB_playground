@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-
+	"log"
 	"time"
+
+	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
 	/*
 	  "github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	  "github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
@@ -24,17 +26,15 @@ import (
 
 func main() {
 
-	db := kvStore{}
-	db.initFdb()
-
-	// directory raw
-	//db.initDirectory("rawFiles")
-	file_path := "2023-10-12T16:02:32.342Z_18:34:02.123Z_cam1.mp4"
 	var f file
-	fMeta := f.extractFileMeta(file_path)
-	fmt.Println(fMeta)
 
-	// TEST Func for Rectangle
+	//file_path := "2023-10-12T16:02:32.342Z_18:34:02.123Z_cam1.mp4"
+	file_path := "2023-10-12T18:34:00.000Z_18:34:02.123Z_cam1.mp4"
+	fMeta := f.extractFileMeta(file_path)
+	fmt.Println(fMeta.endTime.String())
+
+	/* Put this in place for frame manipulation:
+	// Image Manipulation, External Model:
 	EditImg := readImg("test.jpg")
 
 	coor := objectCoord{
@@ -43,9 +43,25 @@ func main() {
 		1100,
 		120,
 	}
-
 	img_marked := addRectangle(EditImg, coor)
 	writeImg("out_rect.jpg", img_marked)
+	*/
+	db := initFdb()
+	//db.instance = initFdb()
+	//db.instance.Options().SetTransactionTimeout(60000) // 60,000 ms = 1 minute
+	//db.instance.Options().SetTransactionRetryLimit(100)
+
+	// add meta to file subDirectory:
+	fileDir, err := directory.CreateOrOpen(db, []string{"fileDir"}, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(fileDir)
+	//rawSub := fileDir.Sub("rawVideo")
+	//proSub := fileDir.Sub("processedVideo")
+	//db.addDirectorySub("rawVideo")
+	//fmt.Println(rawSub)
 
 }
 
@@ -58,7 +74,7 @@ type file struct {
 	fileType  string
 }
 
-// coordinates where object is detected
+// coordinates where object is marked
 type objectCoord struct {
 	x0 int
 	y0 int

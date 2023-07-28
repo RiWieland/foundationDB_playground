@@ -13,24 +13,26 @@ type kvStore struct {
 	subspaces []directory.DirectorySubspace
 }
 
-func (db kvStore) initFdb() kvStore {
+func initFdb() fdb.Database {
 	fdb.MustAPIVersion(620)
-	db.instance = fdb.MustOpenDefault()
-	db.instance.Options().SetTransactionTimeout(60000) // 60,000 ms = 1 minute
-	db.instance.Options().SetTransactionRetryLimit(100)
+	db := fdb.MustOpenDefault()
+	db.Options().SetTransactionTimeout(60000) // 60,000 ms = 1 minute
+	db.Options().SetTransactionRetryLimit(100)
 	return db
 }
 
 // initialize directory for kvStore
-func (db kvStore) addDirectorySub(name string) {
+func (db kvStore) addDirectorySub(name string) directory.DirectorySubspace {
 	directorySub, err := directory.CreateOrOpen(db.instance, []string{name}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var subspaces []directory.DirectorySubspace
-	if len(db.subspaces) != 0 {
-		subspaces = append(subspaces, db.subspaces...)
-		db.subspaces = append(subspaces, directorySub)
-	}
+	/*
+		var subspaces []directory.DirectorySubspace
+		if len(db.subspaces) != 0 {
+			subspaces = append(subspaces, db.subspaces...)
+			db.subspaces = append(subspaces, directorySub)
+		}*/
+	return directorySub
 }
