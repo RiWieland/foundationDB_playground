@@ -51,7 +51,7 @@ func writeImg(path string, img draw.Image) {
 
 }
 
-func addRectangle(img editableImage, coor objectCoord) draw.Image {
+func addRectangle(img editableImage, coor rectCoord) draw.Image {
 
 	myRectangle := image.Rect(coor.x0, coor.y0, coor.x1, coor.y1)
 

@@ -30,7 +30,7 @@ func (f file) extractFileMeta(path string) file {
 	return f
 }
 
-func CreateOutputFile(path string) *os.File {
+func createOutputFile(path string) *os.File {
 	// Add Point Slice
 	out, err := os.Create(path)
 	if err != nil {
