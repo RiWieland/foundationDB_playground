@@ -28,6 +28,7 @@ import (
 // - overwriting keys in key-value store OR timestamp?
 
 var rawSub subspace.Subspace
+var rectSub subspace.Subspace
 
 //var processedSub subspace.Subspace
 
@@ -61,8 +62,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	rawSub := fileDir.Sub("rawVideo")
-	//processedSub := fileDir.Sub("processedVideo")
+	// Prefex in Subs: first Element of Tuple of the key
+	//rawSub := fileDir.Sub("rawVideo")
+	rectSub = fileDir.Sub("rect")
 
 	// clear:
 	_, err = db.Transact(func(tr fdb.Transaction) (interface{}, error) {
@@ -70,20 +72,18 @@ func main() {
 		return nil, nil
 	})
 
-	// enter values:
-	SCKey := rawSub.Pack(tuple.Tuple{f.path, f.startTime, f.endTime})
-	_, err = db.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
-		tr.Set(SCKey, []byte{})
-		return
-	})
+	// Data Model:
+	// - key for the rectangle will be the coordinates
+	// - no value needed
+	testCoor := rectCoord{1, 3, 4, 5}
+
+	writeRect(db, testCoor)
 
 }
 
-func signup(t fdb.Transactor, studentID, class string) (err error) {
-	SCKey := rawSub.Pack(tuple.Tuple{studentID, class})
-
+func writeRect(t fdb.Transactor, coor rectCoord) (err error) {
 	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
-		tr.Set(SCKey, []byte{})
+		tr.Set(rectSub.Pack(tuple.Tuple{coor.x0, coor.x1, coor.y0, coor.y1}), []byte{})
 		return
 	})
 	return
@@ -99,7 +99,7 @@ type file struct {
 }
 
 // coordinates where object is marked
-type objectCoord struct {
+type rectCoord struct {
 	x0 int
 	y0 int
 	x1 int
@@ -115,6 +115,6 @@ type objectDuration struct {
 // draft for keyValue
 type keyValue struct {
 	f file
-	t objectCoord
+	t rectCoord
 	d objectDuration
 }
