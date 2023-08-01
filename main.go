@@ -27,7 +27,7 @@ import (
 // -  - no negative vales
 // - overwriting keys in key-value store OR timestamp?
 
-var rawSub subspace.Subspace
+var imgSub subspace.Subspace
 var rectSub subspace.Subspace
 
 //var processedSub subspace.Subspace
@@ -39,7 +39,7 @@ func main() {
 	//file_path := "2023-10-12T16:02:32.342Z_18:34:02.123Z_cam1.mp4"
 	file_path := "2023-10-12T18:34:00.000Z_18:34:02.123Z_cam1.mp4"
 	fMeta := f.extractFileMeta(file_path)
-	fmt.Println(fMeta.endTime.String())
+	fmt.Println(fMeta.time.String())
 
 	/* Put this in place for frame manipulation:
 	// Image Manipulation, External Model:
@@ -63,7 +63,7 @@ func main() {
 	}
 
 	// Prefex in Subs: first Element of Tuple of the key
-	//rawSub := fileDir.Sub("rawVideo")
+	imgSub = fileDir.Sub("img")
 	rectSub = fileDir.Sub("rect")
 
 	// clear:
@@ -81,21 +81,36 @@ func main() {
 
 }
 
-func writeRect(t fdb.Transactor, coor rectCoord) (err error) {
+func writeRect(t fdb.Transactor, r rectCoord) (err error) {
 	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
-		tr.Set(rectSub.Pack(tuple.Tuple{coor.x0, coor.x1, coor.y0, coor.y1}), []byte{})
+		tr.Set(rectSub.Pack(tuple.Tuple{r.x0, r.x1, r.y0, r.y1}), []byte{})
 		return
 	})
 	return
 }
 
+// Data model for the Files in KV-store:
+// - Key path, fileType,Time
+// - Value rect
+func writeFileCoor(t fdb.Transactor, f file, r rectCoord, time time.Time) (err error) {
+
+	rectKey := rectSub.Pack(tuple.Tuple{r.x0, r.x1, r.y0, r.y1})
+	imgKey := imgSub.Pack(tuple.Tuple{f.path, f.fileType, f.time})
+
+	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
+		tr.Set(rectKey, []byte(imgKey))
+		return
+	})
+	return
+
+}
+
 // write for tag in video
 type file struct {
-	startTime time.Time
-	endTime   time.Time
-	path      string
-	object    string
-	fileType  string
+	path     string
+	fileType string
+	time     time.Time
+	rect     string
 }
 
 // coordinates where object is marked
