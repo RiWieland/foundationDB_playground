@@ -38,7 +38,7 @@ func main() {
 
 	//file_path := "2023-10-12T16:02:32.342Z_18:34:02.123Z_cam1.mp4"
 	file_path := "2023-10-12T18:34:00.000Z_18:34:02.123Z_cam1.mp4"
-	fMeta := f.extractFileMeta(file_path)
+	fMeta := f.extractImgMeta(file_path)
 	fmt.Println(fMeta.time.String())
 
 	/* Put this in place for frame manipulation:
@@ -76,9 +76,10 @@ func main() {
 	// - key for the rectangle will be the coordinates
 	// - no value needed
 	testCoor := rectCoord{1, 3, 4, 5}
+	seconds := time.Duration(10) * time.Second
 
 	writeRect(db, testCoor)
-
+	writeFileCoor(db, fMeta, testCoor, seconds)
 }
 
 func writeRect(t fdb.Transactor, r rectCoord) (err error) {
@@ -92,7 +93,7 @@ func writeRect(t fdb.Transactor, r rectCoord) (err error) {
 // Data model for the Files in KV-store:
 // - Key path, fileType,Time
 // - Value rect
-func writeFileCoor(t fdb.Transactor, f file, r rectCoord, time time.Time) (err error) {
+func writeFileCoor(t fdb.Transactor, f file, r rectCoord, time time.Duration) (err error) {
 
 	rectKey := rectSub.Pack(tuple.Tuple{r.x0, r.x1, r.y0, r.y1})
 	imgKey := imgSub.Pack(tuple.Tuple{f.path, f.fileType, f.time})
