@@ -51,7 +51,7 @@ func (db kvStore) writeRect(r rectCoord) (err error) {
 // Data model for the Files in KV-store:
 // - Key path, fileType,Time
 // - Value rect
-func (db kvStore) writeFileCoor(f file, r rectCoord, time time.Duration) (err error) {
+func (db kvStore) writeImgWithCoor(f img, r rectCoord, time time.Duration) (err error) {
 
 	rectKey := rectSub.Pack(tuple.Tuple{r.x0, r.x1, r.y0, r.y1})
 	imgKey := imgSub.Pack(tuple.Tuple{f.path, f.fileType, int(time)})

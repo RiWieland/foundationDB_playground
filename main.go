@@ -33,18 +33,18 @@ var rectSub subspace.Subspace
 
 func main() {
 
-	var f file
+	var f img
 
 	//file_path := "2023-10-12T16:02:32.342Z_18:34:02.123Z_cam1.mp4"
 	file_path := "2023-10-12T18:34:00.000Z_18:34:02.123Z_cam1.mp4"
-	fMeta := f.extractImgMeta(file_path)
-	fmt.Println(fMeta.time.String())
+	imgMeta := f.extractImgMeta(file_path)
+	fmt.Println(imgMeta.time.String())
 
-	/* Put this in place for frame manipulation:
+	// Put this in place for frame manipulation:
 	// Image Manipulation, External Model:
 	EditImg := readImg("test.jpg")
 
-	coor := objectCoord{
+	coor := rectCoord{
 		0,
 		260,
 		1100,
@@ -52,7 +52,7 @@ func main() {
 	}
 	img_marked := addRectangle(EditImg, coor)
 	writeImg("out_rect.jpg", img_marked)
-	*/
+
 	fdbInst := kvStore{
 		instance: initFdb(),
 	}
@@ -77,15 +77,16 @@ func main() {
 	// Data Model:
 	// - key for the rectangle will be the coordinates
 	// - no value needed
-	testCoor := rectCoord{1, 3, 4, 5}
+
 	seconds := time.Duration(10) * time.Second
 
-	fdbInst.writeRect(testCoor)
-	fdbInst.writeFileCoor(fMeta, testCoor, seconds)
+	fdbInst.writeRect(coor)
+	fdbInst.writeImgWithCoor(imgMeta, coor, seconds)
+
 }
 
 // write for tag in video
-type file struct {
+type img struct {
 	path     string
 	fileType string
 	time     time.Time
@@ -108,7 +109,7 @@ type objectDuration struct {
 
 // draft for keyValue
 type keyValue struct {
-	f file
+	f img
 	t rectCoord
 	d objectDuration
 }

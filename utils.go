@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-func (f file) extractImgMeta(path string) file {
+func (f img) extractImgMeta(path string) img {
 	fn := filepath.Base(path)
 	f.fileType = filepath.Ext(fn)
 	f.path = fn
