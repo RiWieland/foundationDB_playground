@@ -1,9 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"strconv"
+
+	"github.com/disintegration/imaging"
+	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
 func (f img) extractImgMeta(path string) img {
@@ -39,4 +45,46 @@ func createOutputFile(path string) *os.File {
 		os.Exit(1)
 	}
 	return out
+}
+
+func GetFramesPerSec(startSec int, endSec int) [2]int {
+	var FrameArray [2]int
+	FrameArray[0] = int(float64(startSec) * 25.1)
+	FrameArray[1] = int((float64(endSec) * 25.1))
+	// 30, 60 oder gar 120
+	return FrameArray
+}
+
+func ExampleReadFrameAsJpeg(inFileName string, frameNum int) io.Reader {
+
+	buf := bytes.NewBuffer(nil)
+	err := ffmpeg.Input(inFileName).
+		Filter("select", ffmpeg.Args{fmt.Sprintf("gte(n,%d)", frameNum)}).
+		Output("pipe:", ffmpeg.KwArgs{"vframes": 1, "format": "image2", "vcodec": "mjpeg"}).
+		WithOutput(buf, os.Stdout).
+		Run()
+	if err != nil {
+		panic(err)
+	}
+	return buf
+}
+
+func ExtractFrames(input_path string, output_path string, start_sec int, end_sec int) {
+	target_frames := GetFramesPerSec(start_sec, end_sec)
+
+	for i := target_frames[0]; i < target_frames[1]; i++ {
+
+		reader := ExampleReadFrameAsJpeg(input_path, (int(i)))
+		img, err := imaging.Decode(reader)
+		if err != nil {
+			fmt.Println("ERROR")
+		}
+
+		str := strconv.Itoa(i)
+		target_path := output_path + "out" + str + ".jpeg"
+		err = imaging.Save(img, target_path)
+		if err != nil {
+			fmt.Println("ERROR")
+		}
+	}
 }
