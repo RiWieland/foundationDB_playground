@@ -8,7 +8,6 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
-	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	/*
 	  "github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	  "github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
@@ -54,10 +53,13 @@ func main() {
 	img_marked := addRectangle(EditImg, coor)
 	writeImg("out_rect.jpg", img_marked)
 	*/
-	db := initFdb()
+	fdbInst := kvStore{
+		instance: initFdb(),
+	}
+	//db := initFdb()
 
 	// add meta to file subDirectory:
-	fileDir, err := directory.CreateOrOpen(db, []string{"fileDir"}, nil)
+	fileDir, err := directory.CreateOrOpen(fdbInst.instance, []string{"fileDir"}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -67,7 +69,7 @@ func main() {
 	rectSub = fileDir.Sub("rect")
 
 	// clear:
-	_, err = db.Transact(func(tr fdb.Transaction) (interface{}, error) {
+	_, err = fdbInst.instance.Transact(func(tr fdb.Transaction) (interface{}, error) {
 		tr.ClearRange(fileDir)
 		return nil, nil
 	})
@@ -78,32 +80,8 @@ func main() {
 	testCoor := rectCoord{1, 3, 4, 5}
 	seconds := time.Duration(10) * time.Second
 
-	writeRect(db, testCoor)
-	writeFileCoor(db, fMeta, testCoor, seconds)
-}
-
-func writeRect(t fdb.Transactor, r rectCoord) (err error) {
-	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
-		tr.Set(rectSub.Pack(tuple.Tuple{r.x0, r.x1, r.y0, r.y1}), []byte{})
-		return
-	})
-	return
-}
-
-// Data model for the Files in KV-store:
-// - Key path, fileType,Time
-// - Value rect
-func writeFileCoor(t fdb.Transactor, f file, r rectCoord, time time.Duration) (err error) {
-
-	rectKey := rectSub.Pack(tuple.Tuple{r.x0, r.x1, r.y0, r.y1})
-	imgKey := imgSub.Pack(tuple.Tuple{f.path, f.fileType, f.time})
-
-	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
-		tr.Set(rectKey, []byte(imgKey))
-		return
-	})
-	return
-
+	fdbInst.writeRect(testCoor)
+	fdbInst.writeFileCoor(fMeta, testCoor, seconds)
 }
 
 // write for tag in video
