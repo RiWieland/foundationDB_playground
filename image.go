@@ -19,21 +19,64 @@ type Img struct {
 	size []image.Point
 }
 
-func readImg(path string) editableImage {
+func readOs(path string) *os.File {
 	f, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
+	return f
+}
 
-	img_, _ := drawableRGBImage(f)
-	custImg := editableImage{
-		img_,
-	}
+func exportEditImage(path string) editableImage {
+	f := readOs(path)
+	img_, err := drawableRGBImage(f)
 	if err != nil {
 		log.Fatal(err)
 	}
+	custImg := editableImage{
+		img_,
+	}
+
 	return custImg
+}
+
+func exportImageColor(path string) imgColor {
+	var img imgColor
+	var r []uint8
+	var g []uint8
+	var b []uint8
+	var a []uint8
+
+	f := readOs(path)
+
+	imgTemp, _, err := image.Decode(f)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	size := imgTemp.Bounds().Size()
+
+	for x := 0; x < size.X; x++ {
+		for y := 0; y < size.Y; y++ {
+			pixel := imgTemp.At(x, y)
+			col := color.RGBAModel.Convert(pixel).(color.RGBA)
+
+			r = append(r, col.R)
+			g = append(g, col.G)
+			b = append(b, col.B)
+			a = append(a, col.A)
+		}
+	}
+
+	img = imgColor{
+		r,
+		g,
+		b,
+		a,
+	}
+
+	return img
 }
 
 func writeImg(path string, img draw.Image) {
