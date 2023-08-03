@@ -33,7 +33,7 @@ var rectSub subspace.Subspace
 
 func main() {
 
-	var f img
+	var f imgMeta
 
 	//file_path := "2023-10-12T16:02:32.342Z_18:34:02.123Z_cam1.mp4"
 	file_path := "2023-10-12T18:34:00.000Z_18:34:02.123Z_cam1.mp4"
@@ -42,7 +42,7 @@ func main() {
 
 	// Put this in place for frame manipulation:
 	// Image Manipulation, External Model:
-	EditImg := readImg("test.jpg")
+	EditImg := exportEditImage("test.jpg")
 
 	coor := rectCoord{
 		0,
@@ -85,12 +85,20 @@ func main() {
 
 }
 
-// write for tag in video
-type img struct {
+// Metadata for image including rectangle coordinates
+type imgMeta struct {
 	path     string
 	fileType string
 	time     time.Time
 	rect     string
+}
+
+// Image Color space
+type imgColor struct {
+	red   []uint8
+	blue  []uint8
+	green []uint8
+	alpha []uint8
 }
 
 // coordinates where object is marked
@@ -109,7 +117,7 @@ type objectDuration struct {
 
 // draft for keyValue
 type keyValue struct {
-	f img
+	f imgMeta
 	t rectCoord
 	d objectDuration
 }

@@ -12,7 +12,7 @@ import (
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
-func (f img) extractImgMeta(path string) img {
+func (f imgMeta) extractImgMeta(path string) imgMeta {
 	fn := filepath.Base(path)
 	f.fileType = filepath.Ext(fn)
 	f.path = fn
@@ -47,7 +47,7 @@ func createOutputFile(path string) *os.File {
 	return out
 }
 
-func GetFramesPerSec(startSec int, endSec int) [2]int {
+func getFramesPerSec(startSec int, endSec int) [2]int {
 	var FrameArray [2]int
 	FrameArray[0] = int(float64(startSec) * 25.1)
 	FrameArray[1] = int((float64(endSec) * 25.1))
@@ -55,7 +55,7 @@ func GetFramesPerSec(startSec int, endSec int) [2]int {
 	return FrameArray
 }
 
-func ExampleReadFrameAsJpeg(inFileName string, frameNum int) io.Reader {
+func exampleReadFrameAsJpeg(inFileName string, frameNum int) io.Reader {
 
 	buf := bytes.NewBuffer(nil)
 	err := ffmpeg.Input(inFileName).
@@ -69,12 +69,12 @@ func ExampleReadFrameAsJpeg(inFileName string, frameNum int) io.Reader {
 	return buf
 }
 
-func ExtractFrames(input_path string, output_path string, start_sec int, end_sec int) {
-	target_frames := GetFramesPerSec(start_sec, end_sec)
+func extractFrames(input_path string, output_path string, start_sec int, end_sec int) {
+	target_frames := getFramesPerSec(start_sec, end_sec)
 
 	for i := target_frames[0]; i < target_frames[1]; i++ {
 
-		reader := ExampleReadFrameAsJpeg(input_path, (int(i)))
+		reader := exampleReadFrameAsJpeg(input_path, (int(i)))
 		img, err := imaging.Decode(reader)
 		if err != nil {
 			fmt.Println("ERROR")
