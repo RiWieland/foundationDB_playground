@@ -40,26 +40,37 @@ func (db kvStore) addDirectorySub(name string) directory.DirectorySubspace {
 }
 
 // function writes the rectangle into specific sub
-func (db kvStore) writeRect(r rectCoord) (err error) {
+func (db kvStore) writeRect(r rectCoord) (f fdb.Key, err error) {
+	rectKey := rectSub.Pack(tuple.Tuple{r.x0, r.x1, r.y0, r.y1})
+
 	_, err = db.instance.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
-		tr.Set(rectSub.Pack(tuple.Tuple{r.x0, r.x1, r.y0, r.y1}), []byte{})
+		tr.Set(rectKey, []byte{})
 		return
 	})
-	return
+	return rectKey, err
 }
 
 // Data model for the Files in KV-store:
-// - Key path, fileType,Time
+// - Key path, Time
 // - Value rect
-func (db kvStore) writeImgWithCoor(f imgMeta, r rectCoord, time time.Duration) (err error) {
+func (db kvStore) writeImgWithCoor(f imgMeta, time time.Duration, r rectCoord) (err error) {
 
 	rectKey := rectSub.Pack(tuple.Tuple{r.x0, r.x1, r.y0, r.y1})
-	imgKey := imgSub.Pack(tuple.Tuple{f.path, f.fileType, int(time)})
+	imgKey := imgSub.Pack(tuple.Tuple{f.path, int(time)})
 
 	_, err = db.instance.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
-		tr.Set(rectKey, []byte(imgKey))
+		tr.Set(imgKey, []byte(rectKey))
 		return
 	})
 	return
 
+}
+
+// clears Subspace
+func (db kvStore) clearSub(FdbDir directory.DirectorySubspace) {
+
+	_, _ = db.instance.Transact(func(tr fdb.Transaction) (interface{}, error) {
+		tr.ClearRange(FdbDir)
+		return nil, nil
+	})
 }
