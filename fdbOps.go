@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -73,4 +74,34 @@ func (db kvStore) clearSub(FdbDir directory.DirectorySubspace) {
 		tr.ClearRange(FdbDir)
 		return nil, nil
 	})
+}
+
+// Query of rectSub
+func queryRectSub(t fdb.Transactor) (ac []rectCoord, err error) {
+	r, err := t.ReadTransact(func(rtr fdb.ReadTransaction) (interface{}, error) {
+		var rects []rectCoord
+		ri := rtr.GetRange(rectSub, fdb.RangeOptions{}).Iterator()
+		for ri.Advance() {
+
+			kv := ri.MustGet()
+			t, err := rectSub.Unpack(kv.Key)
+			if err != nil {
+				return nil, err
+			}
+
+			rectTemp := rectCoord{
+				int(t[0].(int64)),
+				int(t[1].(int64)),
+				int(t[2].(int64)),
+				int(t[3].(int64)),
+			}
+			rects = append(rects, rectTemp)
+		}
+		return rects, nil
+	})
+	if err == nil {
+		ac = r.([]rectCoord)
+		fmt.Println(ac)
+	}
+	return
 }
