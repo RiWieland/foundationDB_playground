@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -56,12 +57,10 @@ func (db kvStore) writeRect(r rectCoord) (f fdb.Key, err error) {
 // - Value rect
 func (db kvStore) writeImgWithCoor(f imgMeta, time time.Duration, r rectCoord) (Key fdb.Key, err error) {
 
-	rectKey := rectSub.Pack(tuple.Tuple{r.x0, r.x1, r.y0, r.y1})
 	imgKey := imgSub.Pack(tuple.Tuple{f.path, int(time)})
-	recTest := []int{r.x0, r.x1, r.y0, r.y1}
 
 	_, err = db.instance.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
-		tr.Set(imgKey, []byte(recTest))
+		tr.Set(imgKey, []byte(strconv.FormatInt(r.idx, 10)))
 		return
 	})
 	return imgKey, err
@@ -91,11 +90,11 @@ func (db kvStore) queryRectSub() (ac []rectCoord, err error) {
 			}
 
 			rectTemp := rectCoord{
-				int(t[0].(int64)),
-				int(t[1].(int64)),
-				int(t[2].(int64)),
-				int(t[3].(int64)),
-				int(t[4].(int64)),
+				t[0].(int64),
+				t[1].(int64),
+				t[2].(int64),
+				t[3].(int64),
+				t[4].(int64),
 			}
 			rects = append(rects, rectTemp)
 		}

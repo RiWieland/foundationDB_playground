@@ -15,10 +15,6 @@ type editableImage struct {
 	draw.Image
 }
 
-type Img struct {
-	size []image.Point
-}
-
 func readOs(path string) *os.File {
 	f, err := os.Open(path)
 	if err != nil {
@@ -41,8 +37,10 @@ func exportEditImage(path string) editableImage {
 	return custImg
 }
 
-func exportImageColor(path string) imgColor {
-	var img imgColor
+// function exporting Color space from image
+// to Add: direction of exporting X and Y space
+// should be a method for struct?
+func (img imgColor) exportImageColor(path string) imgColor {
 	var r []uint8
 	var g []uint8
 	var b []uint8
@@ -69,12 +67,10 @@ func exportImageColor(path string) imgColor {
 		}
 	}
 
-	img = imgColor{
-		r,
-		g,
-		b,
-		a,
-	}
+	img.red = r
+	img.green = g
+	img.blue = b
+	img.alpha = a
 
 	return img
 }
@@ -96,7 +92,7 @@ func writeImg(path string, img draw.Image) {
 
 func addRectangle(img editableImage, coor rectCoord) draw.Image {
 
-	myRectangle := image.Rect(coor.x0, coor.y0, coor.x1, coor.y1)
+	myRectangle := image.Rect(int(coor.x0), int(coor.y0), int(coor.x1), int(coor.y1))
 
 	myColor := color.RGBA{255, 0, 255, 255}
 

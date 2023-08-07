@@ -20,6 +20,8 @@ import (
 
 // To do:
 // - query function: add methods: all and index
+// - writing: int to string (for example )
+
 var imgSub subspace.Subspace
 var rectSub subspace.Subspace
 
@@ -71,12 +73,12 @@ func main() {
 		instance: initFdb(),
 	}
 	//db := initFdb()
-
 	// add meta to file subDirectory:
 	fileDir, err := directory.CreateOrOpen(fdbInst.instance, []string{"fileDir"}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fdbInst.clearSub(fileDir)
 
 	// Prefex in Subs: first Element of Tuple of the key
 	imgSub = fileDir.Sub("img")
@@ -93,7 +95,8 @@ func main() {
 	fmt.Println(key)
 	fmt.Println(keyImg)
 
-	//t, _ := fdbInst.queryRectSub()
+	t, _ := fdbInst.queryRectSub()
+	fmt.Println(t)
 	i, _ := fdbInst.queryImgSub()
 	fmt.Println(i)
 
@@ -117,11 +120,11 @@ type imgColor struct {
 
 // coordinates where object is marked
 type rectCoord struct {
-	idx int
-	x0  int
-	y0  int
-	x1  int
-	y1  int
+	idx int64
+	x0  int64
+	y0  int64
+	x1  int64
+	y1  int64
 }
 
 // duration when the object is visible
