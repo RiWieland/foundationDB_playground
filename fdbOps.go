@@ -42,7 +42,7 @@ func (db kvStore) addDirectorySub(name string) directory.DirectorySubspace {
 
 // function writes the rectangle into specific sub
 func (db kvStore) writeRect(r rectCoord) (f fdb.Key, err error) {
-	rectKey := rectSub.Pack(tuple.Tuple{r.x0, r.x1, r.y0, r.y1})
+	rectKey := rectSub.Pack(tuple.Tuple{r.idx, r.x0, r.x1, r.y0, r.y1})
 
 	_, err = db.instance.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
 		tr.Set(rectKey, []byte{})
@@ -54,16 +54,17 @@ func (db kvStore) writeRect(r rectCoord) (f fdb.Key, err error) {
 // Data model for the Files in KV-store:
 // - Key path, Time
 // - Value rect
-func (db kvStore) writeImgWithCoor(f imgMeta, time time.Duration, r rectCoord) (err error) {
+func (db kvStore) writeImgWithCoor(f imgMeta, time time.Duration, r rectCoord) (Key fdb.Key, err error) {
 
 	rectKey := rectSub.Pack(tuple.Tuple{r.x0, r.x1, r.y0, r.y1})
 	imgKey := imgSub.Pack(tuple.Tuple{f.path, int(time)})
+	recTest := []int{r.x0, r.x1, r.y0, r.y1}
 
 	_, err = db.instance.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
-		tr.Set(imgKey, []byte(rectKey))
+		tr.Set(imgKey, []byte(recTest))
 		return
 	})
-	return
+	return imgKey, err
 
 }
 
@@ -77,8 +78,8 @@ func (db kvStore) clearSub(FdbDir directory.DirectorySubspace) {
 }
 
 // Query of rectSub
-func queryRectSub(t fdb.Transactor) (ac []rectCoord, err error) {
-	r, err := t.ReadTransact(func(rtr fdb.ReadTransaction) (interface{}, error) {
+func (db kvStore) queryRectSub() (ac []rectCoord, err error) {
+	r, err := db.instance.ReadTransact(func(rtr fdb.ReadTransaction) (interface{}, error) {
 		var rects []rectCoord
 		ri := rtr.GetRange(rectSub, fdb.RangeOptions{}).Iterator()
 		for ri.Advance() {
@@ -94,6 +95,7 @@ func queryRectSub(t fdb.Transactor) (ac []rectCoord, err error) {
 				int(t[1].(int64)),
 				int(t[2].(int64)),
 				int(t[3].(int64)),
+				int(t[4].(int64)),
 			}
 			rects = append(rects, rectTemp)
 		}
@@ -101,6 +103,39 @@ func queryRectSub(t fdb.Transactor) (ac []rectCoord, err error) {
 	})
 	if err == nil {
 		ac = r.([]rectCoord)
+		fmt.Println(ac)
+	}
+	return
+}
+
+// Query of rectSub
+func (db kvStore) queryImgSub() (ac []string, err error) {
+	var classes []string
+	r, err := db.instance.ReadTransact(func(rtr fdb.ReadTransaction) (interface{}, error) {
+
+		ri := rtr.GetRange(imgSub, fdb.RangeOptions{}).Iterator()
+		for ri.Advance() {
+
+			kv := ri.MustGet()
+			t, err := imgSub.Unpack(kv.Key)
+			if err != nil {
+				return nil, err
+			}
+			fmt.Println("t: key: ", t)
+
+			v := kv.Value
+			d := string(v[:])
+			fmt.Println("d: ", d)
+
+			fmt.Println("v: ", string(v))
+
+			classes = append(classes, t[0].(string))
+
+		}
+		return classes, nil
+	})
+	if err == nil {
+		ac = r.([]string)
 		fmt.Println(ac)
 	}
 	return

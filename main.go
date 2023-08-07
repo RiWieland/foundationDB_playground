@@ -5,7 +5,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	/*
@@ -20,12 +19,7 @@ import (
 	*/)
 
 // To do:
-// - transfer data between routines -> channnel /chan
-// - make sure every person only got one account
-// - implement restrictions:
-// -  - no negative vales
-// - overwriting keys in key-value store OR timestamp?
-
+// - query function: add methods: all and index
 var imgSub subspace.Subspace
 var rectSub subspace.Subspace
 
@@ -40,19 +34,39 @@ func main() {
 	imgMeta := f.extractImgMeta(file_path)
 	fmt.Println(imgMeta.time.String())
 
-	// Put this in place for frame manipulation:
-	// Image Manipulation, External Model:
-	EditImg := exportEditImage("test.jpg")
-
 	coor := rectCoord{
+		1,
 		0,
 		260,
 		1100,
 		120,
 	}
-	img_marked := addRectangle(EditImg, coor)
-	writeImg("out_rect.jpg", img_marked)
 
+	coorN := rectCoord{
+		2,
+		20,
+		300,
+		2000,
+		120,
+	}
+
+	// Put this in place for frame manipulation:
+
+	/*
+		// Image Manipulation, External Model:
+		EditImg := exportEditImage("test.jpg")
+
+		coor := rectCoord{
+			0,
+			260,
+			1100,
+			120,
+		}
+		img_marked := addRectangle(EditImg, coor)
+		writeImg("out_rect.jpg", img_marked)
+
+
+	*/
 	fdbInst := kvStore{
 		instance: initFdb(),
 	}
@@ -68,20 +82,20 @@ func main() {
 	imgSub = fileDir.Sub("img")
 	rectSub = fileDir.Sub("rect")
 
-	// clear:
-	_, err = fdbInst.instance.Transact(func(tr fdb.Transaction) (interface{}, error) {
-		tr.ClearRange(fileDir)
-		return nil, nil
-	})
-
 	// Data Model:
 	// - key for the rectangle will be the coordinates
 	// - no value needed
 
 	seconds := time.Duration(10) * time.Second
 
-	fdbInst.writeRect(coor)
-	fdbInst.writeImgWithCoor(imgMeta, coor, seconds)
+	key, _ := fdbInst.writeRect(coorN)
+	keyImg, _ := fdbInst.writeImgWithCoor(imgMeta, seconds, coor)
+	fmt.Println(key)
+	fmt.Println(keyImg)
+
+	//t, _ := fdbInst.queryRectSub()
+	i, _ := fdbInst.queryImgSub()
+	fmt.Println(i)
 
 }
 
@@ -103,10 +117,11 @@ type imgColor struct {
 
 // coordinates where object is marked
 type rectCoord struct {
-	x0 int
-	y0 int
-	x1 int
-	y1 int
+	idx int
+	x0  int
+	y0  int
+	x1  int
+	y1  int
 }
 
 // duration when the object is visible
