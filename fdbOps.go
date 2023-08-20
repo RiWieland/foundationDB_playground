@@ -1,8 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"reflect"
+	"runtime"
 	"strconv"
 	"time"
 
@@ -76,7 +79,7 @@ func (db kvStore) clearSub(FdbDir directory.DirectorySubspace) {
 	})
 }
 
-// Query of rectSub
+// Query of rectSub to return all rects in the sub in a slice
 func (db kvStore) queryRectSub() (ac []rectCoord, err error) {
 	r, err := db.instance.ReadTransact(func(rtr fdb.ReadTransaction) (interface{}, error) {
 		var rects []rectCoord
@@ -102,12 +105,12 @@ func (db kvStore) queryRectSub() (ac []rectCoord, err error) {
 	})
 	if err == nil {
 		ac = r.([]rectCoord)
-		fmt.Println(ac)
 	}
 	return
 }
 
-// Query of rectSub
+// Query of ImgSub
+// The query returns the
 func (db kvStore) queryImgSub() (ac []string, err error) {
 	var classes []string
 	r, err := db.instance.ReadTransact(func(rtr fdb.ReadTransaction) (interface{}, error) {
@@ -123,13 +126,14 @@ func (db kvStore) queryImgSub() (ac []string, err error) {
 			fmt.Println("t: key: ", t)
 
 			v := kv.Value
-			d := string(v[:])
-			fmt.Println("d: ", d)
-
 			fmt.Println("v: ", string(v))
 
 			classes = append(classes, t[0].(string))
 
+			// look up for Rect:
+			// need to query for rectangle by index
+			rect := rtr.GetRange(rectSub.Sub((v)), fdb.RangeOptions{Mode: fdb.StreamingModeWantAll}).Iterator().Advance()
+			fmt.Println(rect)
 		}
 		return classes, nil
 	})
@@ -138,4 +142,27 @@ func (db kvStore) queryImgSub() (ac []string, err error) {
 		fmt.Println(ac)
 	}
 	return
+}
+
+func GetFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+}
+
+// query for individual Rect by idx
+// ATM: queries the subspace and filters on the specific
+func (db kvStore) queryRect(idx int64) (rectCoord, error) {
+	r, _ := db.queryRectSub()
+	var rectReturn rectCoord
+	for _, rect := range r {
+		if idx == int64(rect.idx) {
+			rectReturn = rect
+		}
+	}
+	if rectReturn != (rectCoord{}) {
+		return rectReturn, nil
+
+	} else {
+		return rectReturn, errors.New("Zero Value returned from query rectSub")
+	}
+
 }
