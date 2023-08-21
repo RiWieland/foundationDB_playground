@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"reflect"
+	"runtime"
 	"strconv"
 
 	"github.com/disintegration/imaging"
@@ -87,4 +89,16 @@ func extractFrames(input_path string, output_path string, start_sec int, end_sec
 			fmt.Println("ERROR")
 		}
 	}
+}
+
+func GetFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+}
+
+func convertToInt(s string) int {
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		fmt.Println(s, "is not an inteer.")
+	}
+	return n
 }
