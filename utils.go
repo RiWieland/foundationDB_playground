@@ -14,10 +14,11 @@ import (
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
-func (f imgMeta) extractImgMeta(path string) imgMeta {
-	fn := filepath.Base(path)
-	f.fileType = filepath.Ext(fn)
+// Function takes the path and extracts meta data from it
+func (f imgMeta) extractImgMeta(fn string) imgMeta {
+
 	f.path = fn
+	f.fileType = filepath.Ext(fn)
 	//f.startTime = fn[:14]
 	//f.endTime = fn[:14]
 	/*

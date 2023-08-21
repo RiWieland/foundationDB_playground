@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 	"time"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
@@ -33,7 +34,9 @@ func main() {
 
 	//file_path := "2023-10-12T16:02:32.342Z_18:34:02.123Z_cam1.mp4"
 	file_path := "2023-10-12T18:34:00.000Z_18:34:02.123Z_cam1.mp4"
-	imgMeta := f.extractImgMeta(file_path)
+	fn := filepath.Base(file_path)
+
+	imgMeta := f.extractImgMeta(fn)
 	fmt.Println(imgMeta.time.String())
 
 	coor := rectCoord{
@@ -90,24 +93,20 @@ func main() {
 
 	seconds := time.Duration(10) * time.Second
 
-	key, _ := fdbInst.writeRect(coorN)
+	key, _ := fdbInst.writeRect(coor)
+	keyN, _ := fdbInst.writeRect(coorN)
+
 	keyImg, _ := fdbInst.writeImgWithCoor(imgMeta, seconds, coor)
-	fmt.Println(key)
-	fmt.Println(keyImg)
+	fmt.Println("return coor-key", key)
+	fmt.Println("return coor-key", keyN)
+
+	fmt.Println("return fdb-key", keyImg)
 
 	t, _ := fdbInst.queryRectSub()
 	fmt.Println(t)
 	i, _ := fdbInst.queryImgSub()
 	fmt.Println(i)
 
-}
-
-// Metadata for image including rectangle coordinates
-type imgMeta struct {
-	path     string
-	fileType string
-	time     time.Time
-	rect     string
 }
 
 // Image Color space

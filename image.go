@@ -9,10 +9,19 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 )
 
 type editableImage struct {
 	draw.Image
+}
+
+// Metadata for image including rectangle coordinates
+type imgMeta struct {
+	path     string
+	fileType string
+	time     time.Time
+	rect     rectCoord
 }
 
 func readOs(path string) *os.File {
