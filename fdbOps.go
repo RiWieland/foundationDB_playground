@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"reflect"
-	"runtime"
 	"strconv"
 	"time"
 
@@ -58,7 +56,7 @@ func (db kvStore) writeRect(r rectCoord) (f fdb.Key, err error) {
 // Data model for the Files in KV-store:
 // - Key path, Time
 // - Value rect
-func (db kvStore) writeImgWithCoor(f imgMeta, time time.Duration, r rectCoord) (Key fdb.Key, err error) {
+func (db kvStore) writeImgWithCoor(f img, time time.Duration, r rectCoord) (Key fdb.Key, err error) {
 
 	imgKey := imgSub.Pack(tuple.Tuple{f.path, int(time)})
 
@@ -110,9 +108,11 @@ func (db kvStore) queryRectSub() (ac []rectCoord, err error) {
 }
 
 // Query of ImgSub
-// The query returns the
-func (db kvStore) queryImgSub() (ac []string, err error) {
-	var classes []string
+// The query returns the key and value for the whole imageSub
+func (db kvStore) queryImgSub() (ac []img, err error) {
+	var imgScan []img
+	var imgReturn img
+	//var rectReturn rect
 	r, err := db.instance.ReadTransact(func(rtr fdb.ReadTransaction) (interface{}, error) {
 
 		ri := rtr.GetRange(imgSub, fdb.RangeOptions{}).Iterator()
@@ -123,29 +123,24 @@ func (db kvStore) queryImgSub() (ac []string, err error) {
 			if err != nil {
 				return nil, err
 			}
-			fmt.Println("t: key: ", t)
 
-			v := kv.Value
-			fmt.Println("v: ", string(v))
+			v := string(kv.Value)
+			ret := convertToInt(v)
+			s, _ := db.queryRect(int64(ret))
+			imgReturn := imgReturn.initImgObj(t[0].(string))
+			imgReturn.rect = s
+			imgScan = append(imgScan, imgReturn)
 
-			classes = append(classes, t[0].(string))
-
-			// look up for Rect:
-			// need to query for rectangle by index
-			rect := rtr.GetRange(rectSub.Sub((v)), fdb.RangeOptions{Mode: fdb.StreamingModeWantAll}).Iterator().Advance()
-			fmt.Println(rect)
 		}
-		return classes, nil
+		return imgScan, nil
+
 	})
 	if err == nil {
-		ac = r.([]string)
+		ac = r.([]img)
 		fmt.Println(ac)
 	}
 	return
-}
 
-func GetFunctionName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
 
 // query for individual Rect by idx
@@ -162,7 +157,7 @@ func (db kvStore) queryRect(idx int64) (rectCoord, error) {
 		return rectReturn, nil
 
 	} else {
-		return rectReturn, errors.New("Zero Value returned from query rectSub")
+		return rectReturn, errors.New("zero Value returned from query rectSub")
 	}
 
 }
