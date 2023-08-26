@@ -22,7 +22,7 @@ import (
 // To do:
 // - query function: add methods: all and index
 // - writing: int to string (for example )
-
+// to check: initImgObj: build function that change object?
 var imgSub subspace.Subspace
 var rectSub subspace.Subspace
 
@@ -30,13 +30,13 @@ var rectSub subspace.Subspace
 
 func main() {
 
-	var f imgMeta
+	var f img
 
 	//file_path := "2023-10-12T16:02:32.342Z_18:34:02.123Z_cam1.mp4"
 	file_path := "2023-10-12T18:34:00.000Z_18:34:02.123Z_cam1.mp4"
 	fn := filepath.Base(file_path)
 
-	imgMeta := f.extractImgMeta(fn)
+	imgMeta := f.initImgObj(fn)
 	fmt.Println(imgMeta.time.String())
 
 	coor := rectCoord{
@@ -134,7 +134,7 @@ type objectDuration struct {
 
 // draft for keyValue
 type keyValue struct {
-	f imgMeta
+	f img
 	t rectCoord
 	d objectDuration
 }

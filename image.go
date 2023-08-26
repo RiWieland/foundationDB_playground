@@ -16,8 +16,8 @@ type editableImage struct {
 	draw.Image
 }
 
-// Metadata for image including rectangle coordinates
-type imgMeta struct {
+// imageStruct with metadata and related rect
+type img struct {
 	path     string
 	fileType string
 	time     time.Time

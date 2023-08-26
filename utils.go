@@ -14,8 +14,8 @@ import (
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
-// Function takes the path and extracts meta data from it
-func (f imgMeta) extractImgMeta(fn string) imgMeta {
+// Function takes the path and initialize imgObject out of it
+func (f img) initImgObj(fn string) img {
 
 	f.path = fn
 	f.fileType = filepath.Ext(fn)
