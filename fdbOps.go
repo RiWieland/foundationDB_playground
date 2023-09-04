@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"time"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
@@ -56,9 +55,9 @@ func (db kvStore) writeRect(r rectCoord) (f fdb.Key, err error) {
 // Data model for the Files in KV-store:
 // - Key path, Time
 // - Value rect
-func (db kvStore) writeImgWithCoor(f img, time time.Duration, r rectCoord) (Key fdb.Key, err error) {
+func (db kvStore) writeImgWithCoor(f img, r rectCoord) (Key fdb.Key, err error) {
 
-	imgKey := imgSub.Pack(tuple.Tuple{f.path, int(time)})
+	imgKey := imgSub.Pack(tuple.Tuple{f.path})
 
 	_, err = db.instance.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
 		tr.Set(imgKey, []byte(strconv.FormatInt(r.idx, 10)))
@@ -137,7 +136,7 @@ func (db kvStore) queryImgSub() (ac []img, err error) {
 	})
 	if err == nil {
 		ac = r.([]img)
-		fmt.Println(ac)
+		fmt.Println("func, query imgSub", ac)
 	}
 	return
 
@@ -161,3 +160,27 @@ func (db kvStore) queryRect(idx int64) (rectCoord, error) {
 	}
 
 }
+
+// function drops image key
+func (db kvStore) dropImg(path string) {
+	imgKey := imgSub.Pack(tuple.Tuple{path})
+	_, _ = db.instance.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
+		tr.Clear(imgKey)
+		return
+	})
+	return
+
+}
+
+/*
+
+func drop(t fdb.Transactor, studentID, class string) (err error) {
+	SCKey := attendSS.Pack(tuple.Tuple{studentID, class})
+
+	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
+		tr.Clear(SCKey)
+		return
+	})
+	return
+}
+*/
