@@ -161,26 +161,13 @@ func (db kvStore) queryRect(idx int64) (rectCoord, error) {
 
 }
 
-// function drops image key
+// function drops image key if exists
 func (db kvStore) dropImg(path string) {
 	imgKey := imgSub.Pack(tuple.Tuple{path})
 	_, _ = db.instance.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
 		tr.Clear(imgKey)
+		fmt.Println("dropped key-value pair for Key: ", path)
 		return
 	})
-	return
 
 }
-
-/*
-
-func drop(t fdb.Transactor, studentID, class string) (err error) {
-	SCKey := attendSS.Pack(tuple.Tuple{studentID, class})
-
-	_, err = t.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
-		tr.Clear(SCKey)
-		return
-	})
-	return
-}
-*/

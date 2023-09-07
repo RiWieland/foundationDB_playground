@@ -24,6 +24,15 @@ type img struct {
 	rect     rectCoord
 }
 
+// coordinates where object is marked
+type rectCoord struct {
+	idx int64
+	x0  int64
+	y0  int64
+	x1  int64
+	y1  int64
+}
+
 func readOs(path string) *os.File {
 	f, err := os.Open(path)
 	if err != nil {
