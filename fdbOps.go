@@ -162,6 +162,7 @@ func (db kvStore) queryRect(idx int64) (rectCoord, error) {
 }
 
 // function drops image key if exists
+// Input path: key in the ImgSub
 func (db kvStore) dropImg(path string) {
 	imgKey := imgSub.Pack(tuple.Tuple{path})
 	_, _ = db.instance.Transact(func(tr fdb.Transaction) (ret interface{}, err error) {
@@ -169,5 +170,19 @@ func (db kvStore) dropImg(path string) {
 		fmt.Println("dropped key-value pair for Key: ", path)
 		return
 	})
+
+}
+
+// Adds an value for a corresponding key
+// Value will be added at the end of the Vales for a given key
+// Input path: key in the ImgSub
+func (db kvStore) addImgValue(path string) {
+
+}
+
+// Adds an value for a corresponding key
+// Value will be added at the end of the Vales for a given key
+// Input path: key in the ImgSub
+func (db kvStore) updateImgValue(path string) {
 
 }
