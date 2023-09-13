@@ -140,3 +140,18 @@ func drawableRGBImage(f io.Reader) (draw.Image, error) {
 
 	return output_rgb, nil
 }
+
+// function reads file from disk and exports an image.Image object used for image manipulations
+func imageToColorSpace(inputPath string) image.Image {
+	f, err := os.Open(inputPath)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	imgInputSobel, _, err := image.Decode(f)
+	if err != nil {
+		panic(err)
+	}
+	return imgInputSobel
+}
