@@ -20,7 +20,35 @@ import (
 var imgSub subspace.Subspace
 var rectSub subspace.Subspace
 
-//var processedSub subspace.Subspace
+// Image Color space
+type imgColor struct {
+	red   []uint8
+	blue  []uint8
+	green []uint8
+	alpha []uint8
+}
+
+// coordinates where object is marked
+type rectCoord struct {
+	idx int64
+	x0  int64
+	y0  int64
+	x1  int64
+	y1  int64
+}
+
+// duration when the object is visible
+type objectDuration struct {
+	start time.Time
+	end   time.Time
+}
+
+// draft for keyValue
+type keyValue struct {
+	f img
+	t rectCoord
+	d objectDuration
+}
 
 func main() {
 
@@ -49,22 +77,7 @@ func main() {
 		120,
 	}
 
-	//  frame manipulation on main:
 
-	/*
-		// Image Manipulation, External Model:
-		EditImg := exportEditImage("test.jpg")
-
-		coor := rectCoord{
-			0,
-			260,
-			1100,
-			120,
-		}
-		img_marked := addRectangle(EditImg, coor)
-		writeImg("out_rect.jpg", img_marked)
-	*/
-	
 	fdbInst := kvStore{
 		instance: initFdb(),
 	}
@@ -100,34 +113,19 @@ func main() {
 	i, _ := fdbInst.queryImgSub()
 	fmt.Println(i)
 
+	//  frame manipulation on main:
+	/*
+	// Image Manipulation, External Model:
+	EditImg := exportEditImage("test.jpg")
+
+	coor := rectCoord{
+			0,
+			260,
+			1100,
+			120,
+		}
+	img_marked := addRectangle(EditImg, coor)
+	writeImg("out_rect.jpg", img_marked)
+	*/
 }
 
-// Image Color space
-type imgColor struct {
-	red   []uint8
-	blue  []uint8
-	green []uint8
-	alpha []uint8
-}
-
-// coordinates where object is marked
-type rectCoord struct {
-	idx int64
-	x0  int64
-	y0  int64
-	x1  int64
-	y1  int64
-}
-
-// duration when the object is visible
-type objectDuration struct {
-	start time.Time
-	end   time.Time
-}
-
-// draft for keyValue
-type keyValue struct {
-	f img
-	t rectCoord
-	d objectDuration
-}
