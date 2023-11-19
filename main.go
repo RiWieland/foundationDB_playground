@@ -11,12 +11,6 @@ import (
 	/*
 	  "github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	  "github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
-
-	  "fmt"
-	  "strconv"
-	  "errors"
-	  "sync"
-	  "math/rand"
 	*/)
 
 // To do:
@@ -55,7 +49,7 @@ func main() {
 		120,
 	}
 
-	// Put this in place for frame manipulation:
+	//  frame manipulation on main:
 
 	/*
 		// Image Manipulation, External Model:
@@ -69,9 +63,8 @@ func main() {
 		}
 		img_marked := addRectangle(EditImg, coor)
 		writeImg("out_rect.jpg", img_marked)
-
-
 	*/
+	
 	fdbInst := kvStore{
 		instance: initFdb(),
 	}
