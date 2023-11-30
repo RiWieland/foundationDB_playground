@@ -32,12 +32,6 @@ func (db kvStore) addDirectorySub(name string) directory.DirectorySubspace {
 		log.Fatal(err)
 	}
 
-	/*
-		var subspaces []directory.DirectorySubspace
-		if len(db.subspaces) != 0 {
-			subspaces = append(subspaces, db.subspaces...)
-			db.subspaces = append(subspaces, directorySub)
-		}*/
 	return directorySub
 }
 
